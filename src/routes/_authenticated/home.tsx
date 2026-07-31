@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera, Droplets, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Camera, Droplets, Plus, Sparkles, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -114,9 +114,18 @@ function HomePage() {
 
   return (
     <div className="space-y-4 p-4">
-      <header>
-        <p className="text-xs font-medium text-muted-foreground">{formatLongDate(date)}</p>
-        <h1 className="text-xl font-bold tracking-tight">{greeting()}</h1>
+      <header className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-muted-foreground">{formatLongDate(date)}</p>
+          <h1 className="text-xl font-bold tracking-tight">{greeting()}</h1>
+        </div>
+        <Link
+          to="/profile"
+          aria-label="Profile and goals"
+          className="rounded-full border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <User className="size-4" />
+        </Link>
       </header>
 
       <section className="panel p-4">
