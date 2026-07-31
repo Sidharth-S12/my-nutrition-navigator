@@ -1,0 +1,184 @@
+import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+
+export const Route = createFileRoute("/auth")({
+  head: () => ({
+    meta: [
+      { title: "Sign in | NutriAI" },
+      {
+        name: "description",
+        content: "Sign in or create your NutriAI account to track meals, macros and progress.",
+      },
+      { property: "og:title", content: "Sign in | NutriAI" },
+      { property: "og:description", content: "Access your NutriAI nutrition dashboard." },
+    ],
+  }),
+  component: AuthPage,
+});
+
+function AuthPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function signIn() {
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    navigate({ to: "/home", replace: true });
+  }
+
+  async function signUp() {
+    setBusy(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { full_name: name },
+      },
+    });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    if (!data.session) {
+      setSent(true);
+      return;
+    }
+    navigate({ to: "/home", replace: true });
+  }
+
+  async function google() {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) return toast.error("Google sign-in failed");
+    if (result.redirected) return;
+    navigate({ to: "/home", replace: true });
+  }
+
+  return (
+    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 p-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight">NutriAI</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Track meals, scan food and get coaching that adapts to you.
+        </p>
+      </header>
+
+      {sent ? (
+        <div className="panel p-4">
+          <p className="text-sm font-semibold">Check your email</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            We sent a confirmation link to {email}. Confirm it, then sign in.
+          </p>
+          <Button variant="outline" className="mt-3 w-full" onClick={() => setSent(false)}>
+            Back to sign in
+          </Button>
+        </div>
+      ) : (
+        <Tabs defaultValue="signin">
+          <TabsList className="w-full">
+            <TabsTrigger value="signin" className="flex-1">
+              Sign in
+            </TabsTrigger>
+            <TabsTrigger value="signup" className="flex-1">
+              Create account
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="signin" className="space-y-3 pt-4">
+            <EmailFields
+              email={email}
+              password={password}
+              setEmail={setEmail}
+              setPassword={setPassword}
+            />
+            <Button className="w-full" disabled={busy || !email || !password} onClick={signIn}>
+              {busy ? <Loader2 className="size-4 animate-spin" /> : "Sign in"}
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="signup" className="space-y-3 pt-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <EmailFields
+              email={email}
+              password={password}
+              setEmail={setEmail}
+              setPassword={setPassword}
+            />
+            <Button
+              className="w-full"
+              disabled={busy || !email || password.length < 6}
+              onClick={signUp}
+            >
+              {busy ? <Loader2 className="size-4 animate-spin" /> : "Create account"}
+            </Button>
+          </TabsContent>
+        </Tabs>
+      )}
+
+      <div className="flex items-center gap-3">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          or
+        </span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <Button variant="outline" className="w-full" onClick={google}>
+        Continue with Google
+      </Button>
+    </div>
+  );
+}
+
+function EmailFields({
+  email,
+  password,
+  setEmail,
+  setPassword,
+}: {
+  email: string;
+  password: string;
+  setEmail: (v: string) => void;
+  setPassword: (v: string) => void;
+}) {
+  return (
+    <>
+      <div className="space-y-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+    </>
+  );
+}
