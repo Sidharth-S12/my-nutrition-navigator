@@ -14,7 +14,246 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      coach_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      diet_plans: {
+        Row: {
+          created_at: string
+          id: string
+          plan: Json
+          title: string
+          total_calories: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan: Json
+          title: string
+          total_calories?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan?: Json
+          title?: string
+          total_calories?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      meals: {
+        Row: {
+          calories: number
+          carbs: number
+          created_at: string
+          fat: number
+          id: string
+          image_url: string | null
+          logged_on: string
+          meal_type: string
+          name: string
+          protein: number
+          source: string
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          calories?: number
+          carbs?: number
+          created_at?: string
+          fat?: number
+          id?: string
+          image_url?: string | null
+          logged_on?: string
+          meal_type?: string
+          name: string
+          protein?: number
+          source?: string
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          calories?: number
+          carbs?: number
+          created_at?: string
+          fat?: number
+          id?: string
+          image_url?: string | null
+          logged_on?: string
+          meal_type?: string
+          name?: string
+          protein?: number
+          source?: string
+          summary?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          activity_level: string | null
+          age: number | null
+          allergies: string | null
+          avatar_url: string | null
+          calorie_goal: number
+          carbs_goal: number
+          created_at: string
+          email: string | null
+          fat_goal: number
+          food_preference: string | null
+          full_name: string | null
+          gender: string | null
+          goal: string | null
+          height_cm: number | null
+          id: string
+          medical_conditions: string | null
+          protein_goal: number
+          updated_at: string
+          water_goal_ml: number
+          weight_kg: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          age?: number | null
+          allergies?: string | null
+          avatar_url?: string | null
+          calorie_goal?: number
+          carbs_goal?: number
+          created_at?: string
+          email?: string | null
+          fat_goal?: number
+          food_preference?: string | null
+          full_name?: string | null
+          gender?: string | null
+          goal?: string | null
+          height_cm?: number | null
+          id: string
+          medical_conditions?: string | null
+          protein_goal?: number
+          updated_at?: string
+          water_goal_ml?: number
+          weight_kg?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          age?: number | null
+          allergies?: string | null
+          avatar_url?: string | null
+          calorie_goal?: number
+          carbs_goal?: number
+          created_at?: string
+          email?: string | null
+          fat_goal?: number
+          food_preference?: string | null
+          full_name?: string | null
+          gender?: string | null
+          goal?: string | null
+          height_cm?: number | null
+          id?: string
+          medical_conditions?: string | null
+          protein_goal?: number
+          updated_at?: string
+          water_goal_ml?: number
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      scans: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          results: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          results: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          results?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      water_logs: {
+        Row: {
+          amount_ml: number
+          created_at: string
+          id: string
+          logged_on: string
+          user_id: string
+        }
+        Insert: {
+          amount_ml: number
+          created_at?: string
+          id?: string
+          logged_on?: string
+          user_id: string
+        }
+        Update: {
+          amount_ml?: number
+          created_at?: string
+          id?: string
+          logged_on?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weight_logs: {
+        Row: {
+          created_at: string
+          id: string
+          logged_on: string
+          user_id: string
+          weight_kg: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logged_on?: string
+          user_id: string
+          weight_kg: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logged_on?: string
+          user_id?: string
+          weight_kg?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
