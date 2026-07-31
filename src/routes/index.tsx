@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "NutriAI — AI Nutrition & Calorie Tracker" },
       {
         property: "og:description",
-        content: "Scan meals, track macros and get AI coaching in one mobile app.",
+        content: "NutriAI tracks calories and macros, scans meals from photos, builds diet plans and coaches you daily.",
       },
     ],
   }),

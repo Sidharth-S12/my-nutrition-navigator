@@ -83,18 +83,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Track calories and macros, scan meals from photos and get daily AI coaching with NutriAI.",
+          "NutriAI tracks calories and macros, scans meals from photos, builds diet plans and coaches you daily.",
       },
       { name: "author", content: "NutriAI" },
       { name: "theme-color", content: "#ffffff" },
       { property: "og:title", content: "NutriAI — AI Nutrition & Calorie Tracker" },
       {
         property: "og:description",
-        content: "Scan meals, track macros and get AI coaching in one mobile app.",
+        content: "NutriAI tracks calories and macros, scans meals from photos, builds diet plans and coaches you daily.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "NutriAI — AI Nutrition & Calorie Tracker" },
+      { name: "twitter:description", content: "NutriAI tracks calories and macros, scans meals from photos, builds diet plans and coaches you daily." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c99a6a96-b924-48aa-83b2-187041cb47a2/id-preview-9fdc27bd--91a1e02d-71fc-40a8-a407-ec46f2c4deb6.lovable.app-1785477084380.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c99a6a96-b924-48aa-83b2-187041cb47a2/id-preview-9fdc27bd--91a1e02d-71fc-40a8-a407-ec46f2c4deb6.lovable.app-1785477084380.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -107,7 +111,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
