@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { CoachMessage, DietPlan, DietPlanRow, ScanRow } from "@/core/models";
+import type { Json } from "@/integrations/supabase/types";
 
 async function requireUserId(): Promise<string> {
   const { data, error } = await supabase.auth.getUser();
@@ -27,7 +28,7 @@ export async function savePlan(plan: DietPlan): Promise<DietPlanRow> {
       user_id: userId,
       title: plan.title,
       total_calories: plan.totalCalories,
-      plan: plan as unknown as Record<string, unknown>,
+      plan: plan as unknown as Json,
     })
     .select("*")
     .single();
@@ -57,7 +58,7 @@ export async function saveScan(results: unknown, imageUrl: string | null): Promi
   const { error } = await supabase.from("scans").insert({
     user_id: userId,
     image_url: imageUrl,
-    results: results as Record<string, unknown>,
+    results: results as Json,
   });
   if (error) throw error;
 }
