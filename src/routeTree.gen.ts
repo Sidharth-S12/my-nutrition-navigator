@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthenticatedDietRouteImport } from './routes/_authenticated/diet'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
 import { Route as ApiCoachRouteImport } from './routes/api/coach'
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDietRoute = AuthenticatedDietRouteImport.update({
+  id: '/diet',
+  path: '/diet',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
@@ -42,12 +48,14 @@ const ApiCoachRoute = ApiCoachRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/diet': typeof AuthenticatedDietRoute
   '/home': typeof AuthenticatedHomeRoute
   '/scan': typeof AuthenticatedScanRoute
   '/api/coach': typeof ApiCoachRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/diet': typeof AuthenticatedDietRoute
   '/home': typeof AuthenticatedHomeRoute
   '/scan': typeof AuthenticatedScanRoute
   '/api/coach': typeof ApiCoachRoute
@@ -56,19 +64,21 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/diet': typeof AuthenticatedDietRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
   '/api/coach': typeof ApiCoachRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home' | '/scan' | '/api/coach'
+  fullPaths: '/' | '/diet' | '/home' | '/scan' | '/api/coach'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/scan' | '/api/coach'
+  to: '/' | '/diet' | '/home' | '/scan' | '/api/coach'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_authenticated/diet'
     | '/_authenticated/home'
     | '/_authenticated/scan'
     | '/api/coach'
@@ -96,6 +106,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/diet': {
+      id: '/_authenticated/diet'
+      path: '/diet'
+      fullPath: '/diet'
+      preLoaderRoute: typeof AuthenticatedDietRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
@@ -121,11 +138,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDietRoute: typeof AuthenticatedDietRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDietRoute: AuthenticatedDietRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedScanRoute: AuthenticatedScanRoute,
 }
