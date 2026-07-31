@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CalorieRing, StatBar } from "@/shared/widgets/metrics";
-import { EmptyState, ErrorState, LoadingRows, SectionHeader } from "@/shared/widgets/states";
+import { ErrorState, LoadingRows, SectionHeader } from "@/shared/widgets/states";
 import { addMeal, addWater, deleteMeal, getDaySummary } from "@/core/services/nutrition-service";
 import { generateDailyTip } from "@/lib/nutrition.functions";
 import { MEAL_LABELS, MEAL_TYPES, type MealType } from "@/core/models";
@@ -346,5 +346,3 @@ function AddMealDialog({ date }: { date: string }) {
     </Dialog>
   );
 }
-
-export { EmptyState };
