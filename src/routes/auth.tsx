@@ -34,29 +34,47 @@ function AuthPage() {
 
   async function signIn() {
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    navigate({ to: "/home", replace: true });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      setBusy(false);
+      if (error) {
+        console.error("SignIn error:", error);
+        return toast.error(error.message || JSON.stringify(error));
+      }
+      navigate({ to: "/home", replace: true });
+    } catch (err: any) {
+      setBusy(false);
+      console.error("SignIn unexpected error:", err);
+      toast.error(err?.message || "An unexpected error occurred during signin");
+    }
   }
 
   async function signUp() {
     setBusy(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: name },
-      },
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    if (!data.session) {
-      setSent(true);
-      return;
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { full_name: name },
+        },
+      });
+      setBusy(false);
+      if (error) {
+        console.error("SignUp error:", error);
+        return toast.error(error.message || JSON.stringify(error));
+      }
+      if (!data.session) {
+        setSent(true);
+        return;
+      }
+      navigate({ to: "/home", replace: true });
+    } catch (err: any) {
+      setBusy(false);
+      console.error("SignUp unexpected error:", err);
+      toast.error(err?.message || "An unexpected error occurred during signup");
     }
-    navigate({ to: "/home", replace: true });
   }
 
   async function google() {
