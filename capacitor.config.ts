@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'NutriAI',
   webDir: '.output/public',
   server: {
-    url: 'http://localhost:8081',
+    url: 'https://my-nutrition-navigator.vercel.app',
     cleartext: true,
   }
 };
