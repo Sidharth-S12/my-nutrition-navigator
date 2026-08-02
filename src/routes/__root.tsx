@@ -13,6 +13,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Capacitor } from "@capacitor/core";
+import { App } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 
 function NotFoundComponent() {
   return (
@@ -138,12 +141,41 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    // Supabase auth state listener (web)
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-    return () => data.subscription.unsubscribe();
+
+    // Capacitor deep link listener — handles com.nutriai.app://callback?code=...
+    // fired when Android resumes the app after Google OAuth in Custom Tab
+    let deepLinkHandle: { remove: () => void } | null = null;
+    if (Capacitor.isNativePlatform()) {
+      App.addListener("appUrlOpen", async ({ url }) => {
+        // Close the Custom Tab as soon as we receive the deep link
+        await Browser.close();
+
+        // Extract ?code= from the deep link URL
+        const urlObj = new URL(url);
+        const code = urlObj.searchParams.get("code");
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (!error) {
+            queryClient.invalidateQueries();
+            router.navigate({ to: "/home", replace: true });
+          }
+        }
+      }).then((handle) => {
+        deepLinkHandle = handle;
+      });
+    }
+
+    return () => {
+      data.subscription.unsubscribe();
+      deepLinkHandle?.remove();
+    };
   }, [router, queryClient]);
 
   return (
