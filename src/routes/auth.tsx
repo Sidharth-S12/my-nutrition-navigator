@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -79,30 +77,15 @@ function AuthPage() {
   }
 
   async function google() {
-    const isNative = Capacitor.isNativePlatform();
-
-    // On mobile (Capacitor): use Chrome Custom Tabs + deep link callback
-    // so the user stays inside the app after Google auth.
-    const redirectTo = isNative
-      ? "com.nutriai.app://callback"
-      : `${window.location.origin}/`;
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo,
-        skipBrowserRedirect: isNative, // on mobile we open the URL ourselves
+        redirectTo: `${window.location.origin}/`,
       },
     });
 
     if (error) {
       toast.error("Google sign-in failed: " + error.message);
-      return;
-    }
-
-    // On native: open the OAuth URL in a Chrome Custom Tab (stays in-app)
-    if (isNative && data?.url) {
-      await Browser.open({ url: data.url, windowName: "_self" });
     }
   }
 
