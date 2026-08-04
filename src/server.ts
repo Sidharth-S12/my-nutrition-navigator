@@ -25,15 +25,22 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) return response;
 
-  const body = await response.clone().text();
-  if (!isH3SwallowedErrorBody(body)) return response;
+  try {
+    const body = await response.clone().text();
+    if (isH3SwallowedErrorBody(body)) {
+      console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+      return new Response(renderErrorPage(), {
+        status: 500,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
+    }
+  } catch {
+    /* ignore clone read errors */
+  }
 
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
-  return new Response(renderErrorPage(), {
-    status: 500,
-    headers: { "content-type": "text/html; charset=utf-8" },
-  });
+  return response;
 }
+
 
 function isH3SwallowedErrorBody(body: string): boolean {
   try {

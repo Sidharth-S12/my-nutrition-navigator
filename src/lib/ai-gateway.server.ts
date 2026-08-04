@@ -10,63 +10,93 @@ type ProviderConfig = {
   headerName?: string;
 };
 
-function getAvailableProviders(): ProviderConfig[] {
+function isVisionRequest(body: Record<string, unknown>): boolean {
+  const str = JSON.stringify(body);
+  return str.includes("image_url") || str.includes("data:image");
+}
+
+function getAvailableProviders(hasVision: boolean): ProviderConfig[] {
   const providers: ProviderConfig[] = [];
 
-  // 1. Groq (14,400 requests/day FREE)
-  if (process.env.GROQ_API_KEY) {
-    providers.push({
-      url: "https://api.groq.com/openai/v1/chat/completions",
-      key: process.env.GROQ_API_KEY,
-      model: "llama-3.3-70b-versatile",
-    });
-  }
-
-  // 2. OpenRouter (Free models)
-  if (process.env.OPENROUTER_API_KEY) {
-    providers.push({
-      url: "https://openrouter.ai/api/v1/chat/completions",
-      key: process.env.OPENROUTER_API_KEY,
-      model: "meta-llama/llama-3.3-70b-instruct:free",
-    });
-  }
-
-  // 3. OpenAI (gpt-4o-mini)
-  if (process.env.OPENAI_API_KEY) {
-    providers.push({
-      url: "https://api.openai.com/v1/chat/completions",
-      key: process.env.OPENAI_API_KEY,
-      model: "gpt-4o-mini",
-    });
-  }
-
-  // 4. Google Gemini
-  if (process.env.GEMINI_API_KEY) {
-    providers.push({
-      url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-      key: process.env.GEMINI_API_KEY,
-      model: "gemini-2.0-flash",
-    });
-  }
-
-  // 5. Lovable Gateway
-  if (process.env.LOVABLE_API_KEY) {
-    providers.push({
-      url: "https://ai.gateway.lovable.dev/v1/chat/completions",
-      key: process.env.LOVABLE_API_KEY,
-      model: "google/gemini-2.5-flash",
-      headerName: "Lovable-API-Key",
-    });
+  // For vision requests (photo scanning), prioritize vision-capable models
+  if (hasVision) {
+    if (process.env.GEMINI_API_KEY) {
+      providers.push({
+        url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        key: process.env.GEMINI_API_KEY,
+        model: "gemini-2.0-flash",
+      });
+    }
+    if (process.env.OPENAI_API_KEY) {
+      providers.push({
+        url: "https://api.openai.com/v1/chat/completions",
+        key: process.env.OPENAI_API_KEY,
+        model: "gpt-4o-mini",
+      });
+    }
+    if (process.env.OPENROUTER_API_KEY) {
+      providers.push({
+        url: "https://openrouter.ai/api/v1/chat/completions",
+        key: process.env.OPENROUTER_API_KEY,
+        model: "google/gemini-2.0-flash-lite-001:free",
+      });
+    }
+    if (process.env.LOVABLE_API_KEY) {
+      providers.push({
+        url: "https://ai.gateway.lovable.dev/v1/chat/completions",
+        key: process.env.LOVABLE_API_KEY,
+        model: "google/gemini-2.5-flash",
+        headerName: "Lovable-API-Key",
+      });
+    }
+  } else {
+    // For text-only requests (coach chat, diet plans), prioritize Groq
+    if (process.env.GROQ_API_KEY) {
+      providers.push({
+        url: "https://api.groq.com/openai/v1/chat/completions",
+        key: process.env.GROQ_API_KEY,
+        model: "llama-3.3-70b-versatile",
+      });
+    }
+    if (process.env.GEMINI_API_KEY) {
+      providers.push({
+        url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        key: process.env.GEMINI_API_KEY,
+        model: "gemini-2.0-flash",
+      });
+    }
+    if (process.env.OPENROUTER_API_KEY) {
+      providers.push({
+        url: "https://openrouter.ai/api/v1/chat/completions",
+        key: process.env.OPENROUTER_API_KEY,
+        model: "meta-llama/llama-3.3-70b-instruct:free",
+      });
+    }
+    if (process.env.OPENAI_API_KEY) {
+      providers.push({
+        url: "https://api.openai.com/v1/chat/completions",
+        key: process.env.OPENAI_API_KEY,
+        model: "gpt-4o-mini",
+      });
+    }
+    if (process.env.LOVABLE_API_KEY) {
+      providers.push({
+        url: "https://ai.gateway.lovable.dev/v1/chat/completions",
+        key: process.env.LOVABLE_API_KEY,
+        model: "google/gemini-2.5-flash",
+        headerName: "Lovable-API-Key",
+      });
+    }
   }
 
   return providers;
 }
 
 export function requireApiKey(): string {
-  const providers = getAvailableProviders();
+  const providers = getAvailableProviders(false);
   if (providers.length === 0) {
     throw new Error(
-      "AI is not configured yet. Please set GROQ_API_KEY, OPENROUTER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY.",
+      "AI is not configured yet. Please set GROQ_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY, or OPENAI_API_KEY.",
     );
   }
   return providers[0].key;
@@ -76,8 +106,15 @@ export async function callGateway(
   body: Record<string, unknown>,
   _apiKey?: string,
 ): Promise<Response> {
-  const providers = getAvailableProviders();
+  const hasVision = isVisionRequest(body);
+  const providers = getAvailableProviders(hasVision);
+
   if (providers.length === 0) {
+    if (hasVision) {
+      throw new Error(
+        "Photo scanning requires a vision-capable AI key like GEMINI_API_KEY, OPENAI_API_KEY, or OPENROUTER_API_KEY.",
+      );
+    }
     throw new Error("No AI API key configured.");
   }
 
@@ -114,7 +151,6 @@ export async function callGateway(
     }
   }
 
-  // Return a fresh Response object with the error text so body can be read safely by caller
   return lastResponse
     ? new Response(lastErrorText, {
         status: lastResponse.status,
