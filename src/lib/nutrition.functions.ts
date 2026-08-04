@@ -14,7 +14,7 @@ export const analyzeFoodImage = createServerFn({ method: "POST" })
       {
         role: "system",
         content:
-          "You are a nutrition vision analyst. Identify every distinct food item in the photo and estimate its nutrition for the visible portion. Respond ONLY with JSON: {\"foods\":[{\"name\":string,\"portion\":string,\"confidence\":number 0-1,\"calories\":number,\"protein\":number,\"carbs\":number,\"fat\":number}]}. Macros are grams. If the photo contains no food, return an empty foods array.",
+          'You are a nutrition vision analyst. Identify every distinct food item in the photo and estimate its nutrition for the visible portion. Respond ONLY with JSON: {"foods":[{"name":string,"portion":string,"confidence":number 0-1,"calories":number,"protein":number,"carbs":number,"fat":number}]}. Macros are grams. If the photo contains no food, return an empty foods array.',
       },
       {
         role: "user",
@@ -47,12 +47,14 @@ export const generateDietPlan = createServerFn({ method: "POST" })
       {
         role: "system",
         content:
-          "You are a registered dietitian. Build a realistic one-day meal plan using ordinary, affordable foods. Respond ONLY with JSON: {\"title\":string,\"summary\":string (max 200 chars),\"totalCalories\":number,\"meals\":[{\"slot\":\"Breakfast\"|\"Morning Snack\"|\"Lunch\"|\"Evening Snack\"|\"Dinner\",\"time\":\"08:00\",\"foods\":[string],\"calories\":number,\"protein\":number,\"carbs\":number,\"fat\":number}]}. Always include all five slots in chronological order. Macros in grams.",
+          'You are a registered dietitian. Build a realistic one-day meal plan using ordinary, affordable foods. Respond ONLY with JSON: {"title":string,"summary":string (max 200 chars),"totalCalories":number,"meals":[{"slot":"Breakfast"|"Morning Snack"|"Lunch"|"Evening Snack"|"Dinner","time":"08:00","foods":[string],"calories":number,"protein":number,"carbs":number,"fat":number}]}. Always include all five slots in chronological order. Macros in grams.',
       },
       {
         role: "user",
         content: `Age ${data.age}, ${data.gender}, ${data.heightCm} cm, ${data.weightKg} kg. Goal: ${data.goal}. Activity: ${data.activityLevel}. Food preference: ${data.foodPreference}. Allergies/avoid: ${data.allergies || "none"}.${
-          data.regenerateSlot ? ` Provide a different option specifically for ${data.regenerateSlot} than a typical first suggestion.` : ""
+          data.regenerateSlot
+            ? ` Provide a different option specifically for ${data.regenerateSlot} than a typical first suggestion.`
+            : ""
         }`,
       },
     ]);
@@ -84,5 +86,7 @@ export const generateDailyTip = createServerFn({ method: "POST" })
         content: `Goal: ${data.goal}. Calories ${Math.round(data.caloriesConsumed)}/${data.calorieGoal}. Protein ${Math.round(data.proteinConsumed)}/${data.proteinGoal} g. Water ${data.waterMl}/${data.waterGoalMl} ml.`,
       },
     ]);
-    return { tip: result.tip ?? "Log every meal today — consistent tracking is what moves the numbers." };
+    return {
+      tip: result.tip ?? "Log every meal today — consistent tracking is what moves the numbers.",
+    };
   });

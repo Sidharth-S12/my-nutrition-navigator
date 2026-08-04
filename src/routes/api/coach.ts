@@ -44,7 +44,10 @@ export const Route = createFileRoute("/api/coach")({
         if (!apiKey) return new Response("AI is not configured", { status: 500 });
 
         const messages: Array<Record<string, unknown>> = [
-          { role: "system", content: SYSTEM_PROMPT + (body.context ? `\n\nUser context: ${body.context}` : "") },
+          {
+            role: "system",
+            content: SYSTEM_PROMPT + (body.context ? `\n\nUser context: ${body.context}` : ""),
+          },
           ...history.slice(0, -1).map((m) => ({ role: m.role, content: m.content })),
         ];
 

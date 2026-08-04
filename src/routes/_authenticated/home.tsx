@@ -105,7 +105,10 @@ function HomePage() {
   if (summaryQuery.isError || !summary) {
     return (
       <div className="p-4">
-        <ErrorState message="We couldn't load today's data." onRetry={() => summaryQuery.refetch()} />
+        <ErrorState
+          message="We couldn't load today's data."
+          onRetry={() => summaryQuery.refetch()}
+        />
       </div>
     );
   }
@@ -230,8 +233,9 @@ function HomePage() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{meal.name}</p>
                         <p className="num text-[11px] text-muted-foreground">
-                          {Math.round(Number(meal.calories))} kcal · P{Math.round(Number(meal.protein))} ·
-                          C{Math.round(Number(meal.carbs))} · F{Math.round(Number(meal.fat))}
+                          {Math.round(Number(meal.calories))} kcal · P
+                          {Math.round(Number(meal.protein))} · C{Math.round(Number(meal.carbs))} · F
+                          {Math.round(Number(meal.fat))}
                         </p>
                       </div>
                       <button
@@ -281,7 +285,14 @@ function AddMealDialog({ date }: { date: string }) {
       }),
     onSuccess: () => {
       toast.success("Meal logged");
-      setForm({ name: "", meal_type: form.meal_type, calories: "", protein: "", carbs: "", fat: "" });
+      setForm({
+        name: "",
+        meal_type: form.meal_type,
+        calories: "",
+        protein: "",
+        carbs: "",
+        fat: "",
+      });
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["day-summary", date] });
     },

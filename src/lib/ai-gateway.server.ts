@@ -35,13 +35,19 @@ export function gatewayError(status: number, text: string): Error {
 
 export async function completeJSON<T>(messages: ChatMessage[]): Promise<T> {
   const apiKey = requireApiKey();
-  const response = await callGateway({ messages, response_format: { type: "json_object" } }, apiKey);
+  const response = await callGateway(
+    { messages, response_format: { type: "json_object" } },
+    apiKey,
+  );
   if (!response.ok) throw gatewayError(response.status, await response.text());
   const data = (await response.json()) as {
     choices?: Array<{ message?: { content?: string } }>;
   };
   const content = data.choices?.[0]?.message?.content ?? "";
-  const cleaned = content.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  const cleaned = content
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/, "")
+    .trim();
   try {
     return JSON.parse(cleaned) as T;
   } catch {

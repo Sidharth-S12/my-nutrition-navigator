@@ -88,7 +88,9 @@ export async function listCoachMessages(): Promise<CoachMessage[]> {
 
 export async function saveCoachMessage(role: "user" | "assistant", content: string): Promise<void> {
   const userId = await requireUserId();
-  const { error } = await supabase.from("coach_messages").insert({ user_id: userId, role, content });
+  const { error } = await supabase
+    .from("coach_messages")
+    .insert({ user_id: userId, role, content });
   if (error) throw error;
 }
 

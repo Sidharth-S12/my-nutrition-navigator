@@ -68,5 +68,12 @@ export const ACTIVITY_LEVELS = [
   "Moderately active",
   "Very active",
 ] as const;
-export const FOOD_PREFERENCES = ["No preference", "Vegetarian", "Vegan", "Halal", "Keto", "High protein"] as const;
+export const FOOD_PREFERENCES = [
+  "No preference",
+  "Vegetarian",
+  "Vegan",
+  "Halal",
+  "Keto",
+  "High protein",
+] as const;
 export const GENDERS = ["Male", "Female", "Other"] as const;

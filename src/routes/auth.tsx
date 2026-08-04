@@ -83,58 +83,15 @@ function AuthPage() {
 
     if (isNative) {
       try {
-        let pageLoadedListener: any = null;
-        let finishedListener: any = null;
-
-        const cleanup = async () => {
-          if (pageLoadedListener) await pageLoadedListener.remove();
-          if (finishedListener) await finishedListener.remove();
-        };
-
-        // Listen for when Google redirect reaches our Vercel domain inside the browser sheet
-        pageLoadedListener = await Browser.addListener("browserPageLoaded", async ({ url }) => {
-          if (url.includes("code=") || url.includes("my-nutrition-navigator.vercel.app")) {
-            await Browser.close();
-            await cleanup();
-
-            try {
-              const urlObj = new URL(url);
-              const code = urlObj.searchParams.get("code");
-              if (code) {
-                const { error } = await supabase.auth.exchangeCodeForSession(code);
-                if (error) {
-                  toast.error("Sign-in error: " + error.message);
-                  return;
-                }
-              }
-              const { data } = await supabase.auth.getSession();
-              if (data.session) {
-                navigate({ to: "/home", replace: true });
-              }
-            } catch (e) {
-              console.error("Error parsing callback URL:", e);
-            }
-          }
-        });
-
-        finishedListener = await Browser.addListener("browserFinished", async () => {
-          await cleanup();
-          const { data } = await supabase.auth.getSession();
-          if (data.session) {
-            navigate({ to: "/home", replace: true });
-          }
-        });
-
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
-            redirectTo: `${window.location.origin}/`,
+            redirectTo: "com.nutriai.app://callback",
             skipBrowserRedirect: true,
           },
         });
 
         if (error) {
-          await cleanup();
           toast.error("Google sign-in failed: " + error.message);
           return;
         }

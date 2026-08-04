@@ -27,7 +27,8 @@ export const Route = createFileRoute("/_authenticated/profile")({
       { title: "Profile & Goals | NutriAI" },
       {
         name: "description",
-        content: "Manage your body metrics, activity level, food preferences and daily nutrition goals.",
+        content:
+          "Manage your body metrics, activity level, food preferences and daily nutrition goals.",
       },
       { property: "og:title", content: "Profile & Goals | NutriAI" },
       {
@@ -154,9 +155,24 @@ function ProfilePage() {
         <Field label="Full name" value={form.full_name ?? ""} onChange={set("full_name")} />
         <div className="grid grid-cols-2 gap-2">
           <Field label="Age" value={form.age ?? ""} onChange={set("age")} numeric />
-          <Picker label="Gender" value={form.gender ?? ""} options={[...GENDERS]} onChange={set("gender")} />
-          <Field label="Height (cm)" value={form.height_cm ?? ""} onChange={set("height_cm")} numeric />
-          <Field label="Weight (kg)" value={form.weight_kg ?? ""} onChange={set("weight_kg")} numeric />
+          <Picker
+            label="Gender"
+            value={form.gender ?? ""}
+            options={[...GENDERS]}
+            onChange={set("gender")}
+          />
+          <Field
+            label="Height (cm)"
+            value={form.height_cm ?? ""}
+            onChange={set("height_cm")}
+            numeric
+          />
+          <Field
+            label="Weight (kg)"
+            value={form.weight_kg ?? ""}
+            onChange={set("weight_kg")}
+            numeric
+          />
         </div>
         <Picker label="Goal" value={form.goal ?? ""} options={[...GOALS]} onChange={set("goal")} />
         <Picker
@@ -181,11 +197,31 @@ function ProfilePage() {
       <section className="panel space-y-3 p-4">
         <SectionHeader title="Daily targets" />
         <div className="grid grid-cols-2 gap-2">
-          <Field label="Calories" value={form.calorie_goal ?? ""} onChange={set("calorie_goal")} numeric />
-          <Field label="Protein (g)" value={form.protein_goal ?? ""} onChange={set("protein_goal")} numeric />
-          <Field label="Carbs (g)" value={form.carbs_goal ?? ""} onChange={set("carbs_goal")} numeric />
+          <Field
+            label="Calories"
+            value={form.calorie_goal ?? ""}
+            onChange={set("calorie_goal")}
+            numeric
+          />
+          <Field
+            label="Protein (g)"
+            value={form.protein_goal ?? ""}
+            onChange={set("protein_goal")}
+            numeric
+          />
+          <Field
+            label="Carbs (g)"
+            value={form.carbs_goal ?? ""}
+            onChange={set("carbs_goal")}
+            numeric
+          />
           <Field label="Fat (g)" value={form.fat_goal ?? ""} onChange={set("fat_goal")} numeric />
-          <Field label="Water (ml)" value={form.water_goal_ml ?? ""} onChange={set("water_goal_ml")} numeric />
+          <Field
+            label="Water (ml)"
+            value={form.water_goal_ml ?? ""}
+            onChange={set("water_goal_ml")}
+            numeric
+          />
         </div>
       </section>
 

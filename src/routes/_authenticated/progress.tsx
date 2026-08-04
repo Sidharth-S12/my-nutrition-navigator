@@ -18,7 +18,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingRows, SectionHeader } from "@/shared/widgets/states";
-import { addWeight, currentStreak, getProfile, getRange, listWeights } from "@/core/services/nutrition-service";
+import {
+  addWeight,
+  currentStreak,
+  getProfile,
+  getRange,
+  listWeights,
+} from "@/core/services/nutrition-service";
 import { bmi, bmiLabel, formatShortDate } from "@/core/utils/format";
 
 export const Route = createFileRoute("/_authenticated/progress")({
@@ -98,7 +104,11 @@ function ProgressPage() {
       <div className="grid grid-cols-3 gap-2">
         <StatCard label="Avg kcal" value={avgCalories} />
         <StatCard label="Avg protein" value={`${avgProtein}g`} />
-        <StatCard label="Streak" value={`${streak}d`} icon={<Flame className="size-3.5 text-primary" />} />
+        <StatCard
+          label="Streak"
+          value={`${streak}d`}
+          icon={<Flame className="size-3.5 text-primary" />}
+        />
       </div>
 
       {rangeQuery.isLoading ? (
@@ -110,7 +120,13 @@ function ProgressPage() {
             <ChartFrame>
               <BarChart data={points}>
                 <CartesianGrid vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={10} interval="preserveStartEnd" />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  fontSize={10}
+                  interval="preserveStartEnd"
+                />
                 <YAxis tickLine={false} axisLine={false} fontSize={10} width={34} />
                 <Tooltip cursor={{ fill: "var(--color-muted)" }} />
                 <Bar dataKey="calories" fill="var(--color-primary)" radius={[3, 3, 0, 0]} />
@@ -123,7 +139,13 @@ function ProgressPage() {
             <ChartFrame>
               <AreaChart data={points}>
                 <CartesianGrid vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={10} interval="preserveStartEnd" />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  fontSize={10}
+                  interval="preserveStartEnd"
+                />
                 <YAxis tickLine={false} axisLine={false} fontSize={10} width={34} />
                 <Tooltip />
                 <Area
@@ -152,8 +174,20 @@ function ProgressPage() {
           <ChartFrame>
             <AreaChart data={weightPoints}>
               <CartesianGrid vertical={false} stroke="var(--color-border)" />
-              <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={10} interval="preserveStartEnd" />
-              <YAxis domain={["dataMin - 2", "dataMax + 2"]} tickLine={false} axisLine={false} fontSize={10} width={34} />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                fontSize={10}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                domain={["dataMin - 2", "dataMax + 2"]}
+                tickLine={false}
+                axisLine={false}
+                fontSize={10}
+                width={34}
+              />
               <Tooltip />
               <Area
                 type="monotone"

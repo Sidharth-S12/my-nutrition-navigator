@@ -22,7 +22,8 @@ export const Route = createFileRoute("/_authenticated/coach")({
       { title: "AI Coach | NutriAI" },
       {
         name: "description",
-        content: "Ask NutriAI's coach about meals, macros, training and habits — with photo support.",
+        content:
+          "Ask NutriAI's coach about meals, macros, training and habits — with photo support.",
       },
       { property: "og:title", content: "AI Coach | NutriAI" },
       {
@@ -55,10 +56,16 @@ function CoachPage() {
   const [image, setImage] = useState<string | null>(null);
 
   const history = useQuery({ queryKey: ["coach-messages"], queryFn: listCoachMessages });
-  const summary = useQuery({ queryKey: ["day-summary", todayISO()], queryFn: () => getDaySummary() });
+  const summary = useQuery({
+    queryKey: ["day-summary", todayISO()],
+    queryFn: () => getDaySummary(),
+  });
 
   const messages: Bubble[] = [
-    ...(history.data ?? []).map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+    ...(history.data ?? []).map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    })),
     ...pending,
   ];
 

@@ -24,7 +24,8 @@ export const Route = createFileRoute("/_authenticated/scan")({
       { title: "Scan Food | NutriAI" },
       {
         name: "description",
-        content: "Photograph a meal and let NutriAI identify the foods and estimate calories and macros.",
+        content:
+          "Photograph a meal and let NutriAI identify the foods and estimate calories and macros.",
       },
       { property: "og:title", content: "Scan Food | NutriAI" },
       {
@@ -66,7 +67,9 @@ function ScanPage() {
         toast.info("No food detected in that photo");
         return;
       }
-      const imageUrl = file ? await uploadMealPhoto(file, file.name.split(".").pop() ?? "jpg") : null;
+      const imageUrl = file
+        ? await uploadMealPhoto(file, file.name.split(".").pop() ?? "jpg")
+        : null;
       await saveScan(result, imageUrl).catch(() => undefined);
     },
     onError: (error: Error) => toast.error(error.message || "Analysis failed"),
@@ -197,9 +200,7 @@ function ScanPage() {
             ))}
             <div className="flex items-center justify-between p-3">
               <span className="text-sm font-semibold">Total</span>
-              <span className="num text-sm font-semibold">
-                {Math.round(totals.calories)} kcal
-              </span>
+              <span className="num text-sm font-semibold">{Math.round(totals.calories)} kcal</span>
             </div>
           </div>
 

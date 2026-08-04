@@ -17,7 +17,8 @@ export const Route = createFileRoute("/_authenticated/diet")({
       { title: "Diet Plan | NutriAI" },
       {
         name: "description",
-        content: "Generate a personalised daily meal plan based on your goals, activity and food preferences.",
+        content:
+          "Generate a personalised daily meal plan based on your goals, activity and food preferences.",
       },
       { property: "og:title", content: "Diet Plan | NutriAI" },
       {
@@ -105,7 +106,9 @@ function DietPage() {
           <div className="panel p-4">
             <h2 className="text-base font-bold">{plan.title}</h2>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{plan.summary}</p>
-            <p className="num mt-2 text-sm font-semibold">{Math.round(plan.totalCalories)} kcal / day</p>
+            <p className="num mt-2 text-sm font-semibold">
+              {Math.round(plan.totalCalories)} kcal / day
+            </p>
           </div>
 
           {plan.meals.map((meal) => (
@@ -152,7 +155,10 @@ function DietPage() {
           <LoadingRows rows={2} height={56} />
         ) : (plansQuery.data ?? []).length === 0 ? (
           <div className="panel">
-            <EmptyState title="No saved plans" description="Generate a plan and save it to keep it here." />
+            <EmptyState
+              title="No saved plans"
+              description="Generate a plan and save it to keep it here."
+            />
           </div>
         ) : (
           <div className="panel divide-y divide-border">
@@ -164,7 +170,8 @@ function DietPage() {
                 >
                   <p className="truncate text-sm font-medium">{row.title}</p>
                   <p className="num text-[11px] text-muted-foreground">
-                    {row.total_calories} kcal · {formatShortDate(String(row.created_at).slice(0, 10))}
+                    {row.total_calories} kcal ·{" "}
+                    {formatShortDate(String(row.created_at).slice(0, 10))}
                   </p>
                 </button>
                 <button

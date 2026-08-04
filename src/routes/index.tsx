@@ -15,7 +15,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "NutriAI — AI Nutrition & Calorie Tracker" },
       {
         property: "og:description",
-        content: "NutriAI tracks calories and macros, scans meals from photos, builds diet plans and coaches you daily.",
+        content:
+          "NutriAI tracks calories and macros, scans meals from photos, builds diet plans and coaches you daily.",
       },
     ],
   }),
@@ -52,7 +53,9 @@ function Landing() {
     }
 
     init();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [navigate]);
 
   return (
@@ -64,4 +67,3 @@ function Landing() {
     </div>
   );
 }
-

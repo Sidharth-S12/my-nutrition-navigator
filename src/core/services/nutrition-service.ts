@@ -21,7 +21,11 @@ async function requireUserId(): Promise<string> {
 
 export async function getProfile(): Promise<Profile> {
   const userId = await requireUserId();
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
   if (error) throw error;
   if (data) return data;
   const { data: created, error: insertError } = await supabase
@@ -172,7 +176,11 @@ export async function addWeight(weightKg: number, date = todayISO()): Promise<vo
 /* ---------- aggregates ---------- */
 
 export async function getDaySummary(date = todayISO()): Promise<DaySummary> {
-  const [profile, meals, water] = await Promise.all([getProfile(), listMeals(date), listWater(date)]);
+  const [profile, meals, water] = await Promise.all([
+    getProfile(),
+    listMeals(date),
+    listWater(date),
+  ]);
 
   const mealsByType = MEAL_TYPES.reduce(
     (acc, type) => {
@@ -203,7 +211,10 @@ export type DailyPoint = { date: string; calories: number; protein: number; wate
 export async function getRange(days: number): Promise<DailyPoint[]> {
   const from = daysAgoISO(days - 1);
   const to = todayISO();
-  const [meals, water] = await Promise.all([listMealsBetween(from, to), listWaterBetween(from, to)]);
+  const [meals, water] = await Promise.all([
+    listMealsBetween(from, to),
+    listWaterBetween(from, to),
+  ]);
 
   const points: DailyPoint[] = [];
   for (let i = days - 1; i >= 0; i--) {

@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedDietRouteImport } from './routes/_authenticated/diet'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
@@ -20,6 +19,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
 import { Route as ApiCoachRouteImport } from './routes/api/coach'
+import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,11 +33,6 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/auth/callback',
-  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
@@ -75,11 +70,15 @@ const ApiCoachRoute = ApiCoachRouteImport.update({
   path: '/api/coach',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth_/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/diet': typeof AuthenticatedDietRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -87,11 +86,11 @@ export interface FileRoutesByFullPath {
   '/progress': typeof AuthenticatedProgressRoute
   '/scan': typeof AuthenticatedScanRoute
   '/api/coach': typeof ApiCoachRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/diet': typeof AuthenticatedDietRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -99,13 +98,13 @@ export interface FileRoutesByTo {
   '/progress': typeof AuthenticatedProgressRoute
   '/scan': typeof AuthenticatedScanRoute
   '/api/coach': typeof ApiCoachRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/diet': typeof AuthenticatedDietRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
@@ -113,13 +112,13 @@ export interface FileRoutesById {
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
   '/api/coach': typeof ApiCoachRoute
+  '/auth_/callback': typeof AuthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/auth/callback'
     | '/coach'
     | '/diet'
     | '/home'
@@ -127,11 +126,11 @@ export interface FileRouteTypes {
     | '/progress'
     | '/scan'
     | '/api/coach'
+    | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/auth/callback'
     | '/coach'
     | '/diet'
     | '/home'
@@ -139,12 +138,12 @@ export interface FileRouteTypes {
     | '/progress'
     | '/scan'
     | '/api/coach'
+    | '/auth/callback'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/auth/callback'
     | '/_authenticated/coach'
     | '/_authenticated/diet'
     | '/_authenticated/home'
@@ -152,14 +151,15 @@ export interface FileRouteTypes {
     | '/_authenticated/progress'
     | '/_authenticated/scan'
     | '/api/coach'
+    | '/auth_/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  AuthCallbackRoute: typeof AuthCallbackRoute
   ApiCoachRoute: typeof ApiCoachRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -183,13 +183,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/coach': {
@@ -241,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCoachRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth_/callback': {
+      id: '/auth_/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -269,8 +269,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  AuthCallbackRoute: AuthCallbackRoute,
   ApiCoachRoute: ApiCoachRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

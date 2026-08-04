@@ -32,6 +32,7 @@ NutriAI is a modern, full-stack nutrition assistant designed to help users track
 ### Prerequisites
 
 Make sure you have the following installed:
+
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [npm](https://www.npmjs.com/)
 - [Android Studio](https://developer.android.com/studio) (for running on Android devices)
@@ -39,18 +40,21 @@ Make sure you have the following installed:
 ### Installation
 
 1. **Clone the Repository**
+
    ```bash
    git clone https://github.com/Sidharth-S12/my-nutrition-navigator.git
    cd my-nutrition-navigator
    ```
 
 2. **Install Dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set Up Environment Variables**
    Create a `.env` file in the root directory and add your Supabase credentials:
+
    ```env
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
@@ -69,6 +73,7 @@ Make sure you have the following installed:
 To run the application on your physical Android phone or emulator:
 
 1. **Sync Web Assets**
+
    ```bash
    npm run build
    npx cap sync android
