@@ -136,15 +136,24 @@ function ScanPage() {
         accept="image/*"
         capture="environment"
         className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          handleFile(f);
+        }}
       />
       <input
         ref={galleryRef}
         type="file"
         accept="image/*"
         className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          handleFile(f);
+        }}
       />
+
 
       <div className="panel overflow-hidden">
         {preview ? (

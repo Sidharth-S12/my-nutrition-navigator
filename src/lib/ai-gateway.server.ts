@@ -106,19 +106,30 @@ export async function callGateway(
 
       lastResponse = res;
       lastErrorText = await res.text().catch(() => "");
-      console.warn(`[AI Provider ${provider.url} failed ${res.status}] ${lastErrorText.slice(0, 200)}`);
+      console.warn(
+        `[AI Provider ${provider.url} failed ${res.status}] ${lastErrorText.slice(0, 200)}`,
+      );
     } catch (err) {
       console.warn(`[AI Provider ${provider.url} fetch error]`, err);
     }
   }
 
-  return lastResponse ?? new Response("AI unavailable", { status: 500 });
+  // Return a fresh Response object with the error text so body can be read safely by caller
+  return lastResponse
+    ? new Response(lastErrorText, {
+        status: lastResponse.status,
+        headers: { "Content-Type": "text/plain" },
+      })
+    : new Response("AI service unavailable", { status: 500 });
 }
 
 export function gatewayError(status: number, text: string): Error {
   if (status === 429) return new Error("Too many AI requests right now. Try again in a moment.");
   if (status === 402) return new Error("AI credits are exhausted.");
-  if (status === 401 || (status === 400 && (text.includes("API key") || text.includes("unauthorized")))) {
+  if (
+    status === 401 ||
+    (status === 400 && (text.includes("API key") || text.includes("unauthorized")))
+  ) {
     return new Error("Invalid AI API key. Please check your API key settings in Vercel.");
   }
   console.error(`[ai-gateway ${status}] ${text}`);
