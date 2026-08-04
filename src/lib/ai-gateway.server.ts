@@ -1,5 +1,5 @@
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-export const CHAT_MODEL = "google/gemini-3.6-flash";
+const GATEWAY_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+export const CHAT_MODEL = "gemini-1.5-flash";
 
 export type ChatMessage = {
   role: "system" | "user" | "assistant";
@@ -7,8 +7,8 @@ export type ChatMessage = {
 };
 
 export function requireApiKey(): string {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("AI is not configured yet.");
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("AI is not configured yet. Missing GEMINI_API_KEY.");
   return key;
 }
 
@@ -20,7 +20,7 @@ export async function callGateway(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": apiKey,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({ model: CHAT_MODEL, ...body }),
   });
