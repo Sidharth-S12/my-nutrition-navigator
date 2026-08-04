@@ -101,13 +101,13 @@ function AuthPage() {
         }
       } catch (err: any) {
         console.error("Native Google login error:", err);
-        toast.error("Failed to start Google sign in");
+        toast.error("Failed to start Google sign in: " + (err?.message || "Unknown error"));
       }
     } else {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
