@@ -40,7 +40,7 @@ export const Route = createFileRoute("/api/coach")({
         const history = (body.messages ?? []).slice(-20);
         if (history.length === 0) return new Response("No messages", { status: 400 });
 
-        const apiKey = process.env.LOVABLE_API_KEY;
+        const apiKey = process.env.GEMINI_API_KEY || process.env.LOVABLE_API_KEY;
         if (!apiKey) return new Response("AI is not configured", { status: 500 });
 
         const messages: Array<Record<string, unknown>> = [
@@ -64,11 +64,32 @@ export const Route = createFileRoute("/api/coach")({
             : { role: "user", content: last.content },
         );
 
-        const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
-          body: JSON.stringify({ model: "google/gemini-3.6-flash", messages, stream: true }),
-        });
+        const isLovable = Boolean(process.env.LOVABLE_API_KEY) || apiKey.startsWith("AQ.");
+        let upstream: Response;
+
+        if (isLovable) {
+          upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
+            body: JSON.stringify({ model: "google/gemini-2.5-flash", messages, stream: true }),
+          });
+          if (!upstream.ok) {
+            // Try direct Google Gemini fallback if Lovable returned error
+            const fallback = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+              body: JSON.stringify({ model: "gemini-1.5-flash", messages, stream: true }),
+            });
+            if (fallback.ok) upstream = fallback;
+          }
+        } else {
+          upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+            body: JSON.stringify({ model: "gemini-1.5-flash", messages, stream: true }),
+          });
+        }
+
 
         if (!upstream.ok || !upstream.body) {
           const text = await upstream.text().catch(() => "");

@@ -1,4 +1,5 @@
 const GATEWAY_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const LOVABLE_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 export const CHAT_MODEL = "gemini-1.5-flash";
 
 export type ChatMessage = {
@@ -7,8 +8,8 @@ export type ChatMessage = {
 };
 
 export function requireApiKey(): string {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("AI is not configured yet. Missing GEMINI_API_KEY.");
+  const key = process.env.GEMINI_API_KEY || process.env.LOVABLE_API_KEY;
+  if (!key) throw new Error("AI is not configured yet. Missing GEMINI_API_KEY or LOVABLE_API_KEY.");
   return key;
 }
 
@@ -16,6 +17,19 @@ export async function callGateway(
   body: Record<string, unknown>,
   apiKey: string,
 ): Promise<Response> {
+  const isLovable = Boolean(process.env.LOVABLE_API_KEY) || apiKey.startsWith("AQ.");
+  if (isLovable) {
+    const res = await fetch(LOVABLE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": apiKey,
+      },
+      body: JSON.stringify({ model: "google/gemini-2.5-flash", ...body }),
+    });
+    if (res.ok) return res;
+  }
+
   return fetch(GATEWAY_URL, {
     method: "POST",
     headers: {
@@ -25,6 +39,7 @@ export async function callGateway(
     body: JSON.stringify({ model: CHAT_MODEL, ...body }),
   });
 }
+
 
 export function gatewayError(status: number, text: string): Error {
   if (status === 429) return new Error("Too many requests right now. Try again in a moment.");
