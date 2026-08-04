@@ -37,14 +37,12 @@ export const Route = createFileRoute("/_authenticated/scan")({
   component: ScanPage,
 });
 
+import { compressImageToDataUrl } from "@/lib/image-compress";
+
 async function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Could not read the image"));
-    reader.readAsDataURL(file);
-  });
+  return compressImageToDataUrl(file);
 }
+
 
 function ScanPage() {
   const queryClient = useQueryClient();

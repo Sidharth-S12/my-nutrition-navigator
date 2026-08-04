@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { callGateway, gatewayError } from "@/lib/ai-gateway.server";
 
 type IncomingMessage = { role: "user" | "assistant"; content: string };
 type Body = { messages?: IncomingMessage[]; imageDataUrl?: string | null; context?: string };
@@ -40,9 +41,6 @@ export const Route = createFileRoute("/api/coach")({
         const history = (body.messages ?? []).slice(-20);
         if (history.length === 0) return new Response("No messages", { status: 400 });
 
-        const apiKey = process.env.GEMINI_API_KEY || process.env.LOVABLE_API_KEY;
-        if (!apiKey) return new Response("AI is not configured", { status: 500 });
-
         const messages: Array<Record<string, unknown>> = [
           {
             role: "system",
@@ -64,43 +62,12 @@ export const Route = createFileRoute("/api/coach")({
             : { role: "user", content: last.content },
         );
 
-        const isLovable = Boolean(process.env.LOVABLE_API_KEY) || apiKey.startsWith("AQ.");
-        let upstream: Response;
-
-        if (isLovable) {
-          upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
-            body: JSON.stringify({ model: "google/gemini-2.5-flash", messages, stream: true }),
-          });
-          if (!upstream.ok) {
-            // Try direct Google Gemini fallback if Lovable returned error
-            const fallback = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-              body: JSON.stringify({ model: "gemini-1.5-flash", messages, stream: true }),
-            });
-            if (fallback.ok) upstream = fallback;
-          }
-        } else {
-          upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-            body: JSON.stringify({ model: "gemini-1.5-flash", messages, stream: true }),
-          });
-        }
-
+        const upstream = await callGateway({ messages, stream: true });
 
         if (!upstream.ok || !upstream.body) {
           const text = await upstream.text().catch(() => "");
-          console.error(`[coach ${upstream.status}] ${text}`);
-          const message =
-            upstream.status === 429
-              ? "Too many requests. Please wait a moment."
-              : upstream.status === 402
-                ? "AI credits are exhausted."
-                : "The coach is unavailable right now.";
-          return new Response(message, { status: upstream.status || 500 });
+          const err = gatewayError(upstream.status, text);
+          return new Response(err.message, { status: upstream.status || 500 });
         }
 
         // Convert the upstream SSE into a plain text stream of deltas.

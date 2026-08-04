@@ -1,60 +1,138 @@
-const GATEWAY_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const LOVABLE_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-export const CHAT_MODEL = "gemini-1.5-flash";
-
 export type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string | Array<Record<string, unknown>>;
 };
 
+type ProviderConfig = {
+  url: string;
+  key: string;
+  model: string;
+  headerName?: string;
+};
+
+function getAvailableProviders(): ProviderConfig[] {
+  const providers: ProviderConfig[] = [];
+
+  // 1. Groq (14,400 requests/day FREE)
+  if (process.env.GROQ_API_KEY) {
+    providers.push({
+      url: "https://api.groq.com/openai/v1/chat/completions",
+      key: process.env.GROQ_API_KEY,
+      model: "llama-3.3-70b-versatile",
+    });
+  }
+
+  // 2. OpenRouter (Free models)
+  if (process.env.OPENROUTER_API_KEY) {
+    providers.push({
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      key: process.env.OPENROUTER_API_KEY,
+      model: "meta-llama/llama-3.3-70b-instruct:free",
+    });
+  }
+
+  // 3. OpenAI (gpt-4o-mini)
+  if (process.env.OPENAI_API_KEY) {
+    providers.push({
+      url: "https://api.openai.com/v1/chat/completions",
+      key: process.env.OPENAI_API_KEY,
+      model: "gpt-4o-mini",
+    });
+  }
+
+  // 4. Google Gemini
+  if (process.env.GEMINI_API_KEY) {
+    providers.push({
+      url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      key: process.env.GEMINI_API_KEY,
+      model: "gemini-2.0-flash",
+    });
+  }
+
+  // 5. Lovable Gateway
+  if (process.env.LOVABLE_API_KEY) {
+    providers.push({
+      url: "https://ai.gateway.lovable.dev/v1/chat/completions",
+      key: process.env.LOVABLE_API_KEY,
+      model: "google/gemini-2.5-flash",
+      headerName: "Lovable-API-Key",
+    });
+  }
+
+  return providers;
+}
+
 export function requireApiKey(): string {
-  const key = process.env.GEMINI_API_KEY || process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("AI is not configured yet. Missing GEMINI_API_KEY or LOVABLE_API_KEY.");
-  return key;
+  const providers = getAvailableProviders();
+  if (providers.length === 0) {
+    throw new Error(
+      "AI is not configured yet. Please set GROQ_API_KEY, OPENROUTER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY.",
+    );
+  }
+  return providers[0].key;
 }
 
 export async function callGateway(
   body: Record<string, unknown>,
-  apiKey: string,
+  _apiKey?: string,
 ): Promise<Response> {
-  const isLovable = Boolean(process.env.LOVABLE_API_KEY) || apiKey.startsWith("AQ.");
-  if (isLovable) {
-    const res = await fetch(LOVABLE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": apiKey,
-      },
-      body: JSON.stringify({ model: "google/gemini-2.5-flash", ...body }),
-    });
-    if (res.ok) return res;
+  const providers = getAvailableProviders();
+  if (providers.length === 0) {
+    throw new Error("No AI API key configured.");
   }
 
-  return fetch(GATEWAY_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({ model: CHAT_MODEL, ...body }),
-  });
+  let lastResponse: Response | null = null;
+  let lastErrorText = "";
+
+  for (const provider of providers) {
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (provider.headerName) {
+        headers[provider.headerName] = provider.key;
+      } else {
+        headers["Authorization"] = `Bearer ${provider.key}`;
+      }
+
+      const res = await fetch(provider.url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ model: provider.model, ...body }),
+      });
+
+      if (res.ok) return res;
+
+      lastResponse = res;
+      lastErrorText = await res.text().catch(() => "");
+      console.warn(`[AI Provider ${provider.url} failed ${res.status}] ${lastErrorText.slice(0, 200)}`);
+    } catch (err) {
+      console.warn(`[AI Provider ${provider.url} fetch error]`, err);
+    }
+  }
+
+  return lastResponse ?? new Response("AI unavailable", { status: 500 });
 }
 
-
 export function gatewayError(status: number, text: string): Error {
-  if (status === 429) return new Error("Too many requests right now. Try again in a moment.");
-  if (status === 402) return new Error("AI credits are exhausted. Add credits to continue.");
+  if (status === 429) return new Error("Too many AI requests right now. Try again in a moment.");
+  if (status === 402) return new Error("AI credits are exhausted.");
+  if (status === 401 || (status === 400 && (text.includes("API key") || text.includes("unauthorized")))) {
+    return new Error("Invalid AI API key. Please check your API key settings in Vercel.");
+  }
   console.error(`[ai-gateway ${status}] ${text}`);
   return new Error("The AI service could not complete this request.");
 }
 
 export async function completeJSON<T>(messages: ChatMessage[]): Promise<T> {
-  const apiKey = requireApiKey();
-  const response = await callGateway(
-    { messages, response_format: { type: "json_object" } },
-    apiKey,
-  );
+  const response = await callGateway({
+    messages,
+    response_format: { type: "json_object" },
+  });
+
   if (!response.ok) throw gatewayError(response.status, await response.text());
+
   const data = (await response.json()) as {
     choices?: Array<{ message?: { content?: string } }>;
   };
@@ -63,6 +141,7 @@ export async function completeJSON<T>(messages: ChatMessage[]): Promise<T> {
     .replace(/^```(?:json)?/i, "")
     .replace(/```$/, "")
     .trim();
+
   try {
     return JSON.parse(cleaned) as T;
   } catch {

@@ -14,6 +14,7 @@ import {
   saveCoachMessage,
 } from "@/core/services/content-service";
 import { getDaySummary } from "@/core/services/nutrition-service";
+import { compressImageToDataUrl } from "@/lib/image-compress";
 import { todayISO } from "@/core/utils/format";
 
 export const Route = createFileRoute("/_authenticated/coach")({
@@ -137,10 +138,14 @@ function CoachPage() {
 
   async function pickImage(file: File | undefined) {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImage(String(reader.result));
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImageToDataUrl(file);
+      setImage(compressed);
+    } catch {
+      toast.error("Could not process image");
+    }
   }
+
 
   return (
     <div className="flex h-[calc(100vh-5rem)] flex-col">
