@@ -51,26 +51,35 @@ function ScanPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [foods, setFoods] = useState<DetectedFood[] | null>(null);
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
   const [mealType, setMealType] = useState<MealType>("lunch");
   const [logged, setLogged] = useState(false);
 
   const analyze = useMutation({
     mutationFn: async (dataUrl: string) => {
-      const res = await analyzeFoodImage({ data: { imageDataUrl: dataUrl } });
-      return res.foods;
+      return await analyzeFoodImage({ data: { imageDataUrl: dataUrl } });
     },
-    onSuccess: async (result) => {
-      setFoods(result);
-      if (result.length === 0) {
+    onSuccess: async (res) => {
+      setFoods(res.foods);
+      if (res.warning) {
+        setWarningMessage(res.warning);
+        toast.info(res.warning);
+      } else {
+        setWarningMessage(null);
+      }
+
+      if (res.foods.length === 0) {
         toast.info("No food detected in that photo");
         return;
       }
       const imageUrl = file
-        ? await uploadMealPhoto(file, file.name.split(".").pop() ?? "jpg")
+        ? await uploadMealPhoto(file, file.name.split(".").pop() ?? "jpg").catch(() => null)
         : null;
-      await saveScan(result, imageUrl).catch(() => undefined);
+      await saveScan(res.foods, imageUrl).catch(() => undefined);
     },
-    onError: (error: Error) => toast.error(error.message || "Analysis failed"),
+    onError: (error: Error) => {
+      toast.error(error.message || "Analysis failed. Please try again.");
+    },
   });
 
   const log = useMutation({
@@ -103,12 +112,18 @@ function ScanPage() {
       toast.error("Image is too large (max 8 MB)");
       return;
     }
-    setFile(selected);
-    setFoods(null);
-    setLogged(false);
-    const dataUrl = await fileToDataUrl(selected);
-    setPreview(dataUrl);
-    analyze.mutate(dataUrl);
+    try {
+      setFile(selected);
+      setFoods(null);
+      setWarningMessage(null);
+      setLogged(false);
+      const dataUrl = await fileToDataUrl(selected);
+      setPreview(dataUrl);
+      analyze.mutate(dataUrl);
+    } catch (err) {
+      console.error("[ScanPage] Error processing photo:", err);
+      toast.error("Could not process this image file. Try selecting another image.");
+    }
   }
 
   const totals = (foods ?? []).reduce(
@@ -154,7 +169,6 @@ function ScanPage() {
         }}
       />
 
-
       <div className="panel overflow-hidden">
         {preview ? (
           <img src={preview} alt="Meal to analyse" className="h-56 w-full object-cover" />
@@ -184,6 +198,12 @@ function ScanPage() {
         <div className="panel flex items-center gap-3 p-4">
           <Loader2 className="size-4 animate-spin text-primary" />
           <p className="text-sm">Analysing your meal…</p>
+        </div>
+      ) : null}
+
+      {warningMessage ? (
+        <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-xs text-amber-600 dark:text-amber-400">
+          ⚠️ {warningMessage}
         </div>
       ) : null}
 

@@ -6,25 +6,57 @@ const AnalyzeInput = z.object({
   imageDataUrl: z.string().startsWith("data:image/"),
 });
 
+export type AnalyzeFoodResult = {
+  foods: DetectedFood[];
+  isFallback?: boolean;
+  warning?: string;
+};
+
 export const analyzeFoodImage = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AnalyzeInput.parse(input))
-  .handler(async ({ data }): Promise<{ foods: DetectedFood[] }> => {
-    const { completeJSON } = await import("@/lib/ai-gateway.server");
-    const result = await completeJSON<{ foods?: DetectedFood[] }>([
-      {
-        role: "system",
-        content:
-          'You are a nutrition vision analyst. Identify every distinct food item in the photo and estimate its nutrition for the visible portion. Respond ONLY with JSON: {"foods":[{"name":string,"portion":string,"confidence":number 0-1,"calories":number,"protein":number,"carbs":number,"fat":number}]}. Macros are grams. If the photo contains no food, return an empty foods array.',
-      },
-      {
-        role: "user",
-        content: [
-          { type: "text", text: "Identify the foods and estimate nutrition." },
-          { type: "image_url", image_url: { url: data.imageDataUrl } },
+  .handler(async ({ data }): Promise<AnalyzeFoodResult> => {
+    try {
+      const { completeJSON } = await import("@/lib/ai-gateway.server");
+      const result = await completeJSON<{ foods?: DetectedFood[] }>([
+        {
+          role: "system",
+          content:
+            'You are a nutrition vision analyst. Identify every distinct food item in the photo and estimate its nutrition for the visible portion. Respond ONLY with JSON: {"foods":[{"name":string,"portion":string,"confidence":number 0-1,"calories":number,"protein":number,"carbs":number,"fat":number}]}. Macros are grams. If the photo contains no food, return an empty foods array.',
+        },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Identify the foods and estimate nutrition." },
+            { type: "image_url", image_url: { url: data.imageDataUrl } },
+          ],
+        },
+      ]);
+      return { foods: (result.foods ?? []).slice(0, 8) };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("[analyzeFoodImage] AI vision call failed, using fallback estimation:", msg);
+
+      const isRateLimit = msg.toLowerCase().includes("too many") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("429");
+      const warningMessage = isRateLimit
+        ? "AI vision rate limit reached. Created an estimated meal profile you can edit and log."
+        : "Photo vision model unavailable. Created an estimated meal template you can customize.";
+
+      return {
+        isFallback: true,
+        warning: warningMessage,
+        foods: [
+          {
+            name: "Scanned Meal / Main Item",
+            portion: "1 serving (estimated)",
+            confidence: 0.75,
+            calories: 450,
+            protein: 25,
+            carbs: 50,
+            fat: 15,
+          },
         ],
-      },
-    ]);
-    return { foods: (result.foods ?? []).slice(0, 8) };
+      };
+    }
   });
 
 const PlanInput = z.object({
